@@ -13,11 +13,16 @@ using Windows.ApplicationModel;
 
 namespace AIChat.ViewModels;
 
-public class SettingsViewModel : ObservableRecipient
+public partial class SettingsViewModel : ObservableRecipient
 {
+    private readonly ILocalSettingsService _localSettingsService;
     private readonly IThemeSelectorService _themeSelectorService;
     private ElementTheme _elementTheme;
     private string _versionDescription;
+
+    [ObservableProperty]
+    private string _openAiApiKey;
+    private const string OpenAiApiKeySettingsKey = "OpenAiApiKey";
 
     public ElementTheme ElementTheme
     {
@@ -36,8 +41,9 @@ public class SettingsViewModel : ObservableRecipient
         get;
     }
 
-    public SettingsViewModel(IThemeSelectorService themeSelectorService)
+    public SettingsViewModel(ILocalSettingsService localSettingsService, IThemeSelectorService themeSelectorService)
     {
+        _localSettingsService = localSettingsService;
         _themeSelectorService = themeSelectorService;
         _elementTheme = _themeSelectorService.Theme;
         _versionDescription = GetVersionDescription();
@@ -51,6 +57,19 @@ public class SettingsViewModel : ObservableRecipient
                     await _themeSelectorService.SetThemeAsync(param);
                 }
             });
+
+        _openAiApiKey = string.Empty;
+        Task.Run(async () =>
+        {
+            OpenAiApiKey = await _localSettingsService.ReadSettingAsync<string>(OpenAiApiKeySettingsKey) ?? string.Empty;
+            PropertyChanged += async (sender, e) =>
+            {
+                if (e.PropertyName == nameof(OpenAiApiKey))
+                {
+                    await _localSettingsService.SaveSettingAsync(OpenAiApiKeySettingsKey, OpenAiApiKey);
+                }
+            };
+        });
     }
 
     private static string GetVersionDescription()

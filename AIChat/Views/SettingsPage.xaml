@@ -62,6 +62,13 @@
                     Style="{ThemeResource BodyTextBlockStyle}" />
                 <HyperlinkButton x:Uid="SettingsPage_PrivacyTermsLink" Margin="{StaticResource SettingsPageHyperlinkButtonMargin}" />
             </StackPanel>
+
+            <TextBlock x:Uid="Setting_ApiKey" Style="{ThemeResource SubtitleTextBlockStyle}" />
+            
+            <StackPanel Margin="{StaticResource XSmallTopMargin}">
+                <TextBlock x:Uid="Settings_OpenAiApiKey" Style="{ThemeResource BodyTextBlockStyle}" />
+                <TextBox x:Uid="Settings_OpenAiApiKeyInput" Text="{x:Bind ViewModel.OpenAiApiKey, Mode=TwoWay}" />
+            </StackPanel>
         </StackPanel>
     </Grid>
 </Page>
