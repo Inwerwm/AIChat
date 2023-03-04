@@ -14,7 +14,7 @@ public class PageService : IPageService
 
     public PageService()
     {
-        Configure<MainViewModel, MainPage>();
+        Configure<ChatGptViewModel, ChatGptPage>();
         Configure<SettingsViewModel, SettingsPage>();
     }
 

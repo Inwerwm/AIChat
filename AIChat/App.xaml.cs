@@ -69,8 +69,8 @@ public partial class App : Application
             // Views and ViewModels
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<SettingsPage>();
-            services.AddTransient<MainViewModel>();
-            services.AddTransient<MainPage>();
+            services.AddTransient<ChatGptViewModel>();
+            services.AddTransient<ChatGptPage>();
             services.AddTransient<ShellPage>();
             services.AddTransient<ShellViewModel>();
 

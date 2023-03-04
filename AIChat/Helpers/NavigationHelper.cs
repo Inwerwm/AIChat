@@ -6,7 +6,7 @@ namespace AIChat.Helpers;
 // Helper class to set the navigation target for a NavigationViewItem.
 //
 // Usage in XAML:
-// <NavigationViewItem x:Uid="Shell_Main" Icon="Document" helpers:NavigationHelper.NavigateTo="AppName.ViewModels.MainViewModel" />
+// <NavigationViewItem x:Uid="Shell_ChatGpt" Icon="Document" helpers:NavigationHelper.NavigateTo="AppName.ViewModels.MainViewModel" />
 //
 // Usage in code:
 // NavigationHelper.SetNavigateTo(navigationViewItem, typeof(MainViewModel).FullName);

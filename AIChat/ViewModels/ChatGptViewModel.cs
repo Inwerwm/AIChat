@@ -2,9 +2,9 @@
 
 namespace AIChat.ViewModels;
 
-public class MainViewModel : ObservableRecipient
+public class ChatGptViewModel : ObservableRecipient
 {
-    public MainViewModel()
+    public ChatGptViewModel()
     {
     }
 }
