@@ -1,0 +1,10 @@
+﻿{
+    "profiles": {
+      "AIChat (Unpackaged)": {
+        "commandName": "Project"
+      },
+      "AIChat (Package)": {
+        "commandName": "MsixPackage"
+      }
+    }
+}
