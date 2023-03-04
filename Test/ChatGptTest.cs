@@ -1,3 +1,4 @@
+using System.Text.Json;
 using AIChat.Core.Models.ChatGpt;
 using Xunit.Abstractions;
 
@@ -21,9 +22,6 @@ public class ChatGptTest
 
         Assert.NotNull(response);
 
-        foreach (var choice in response.Choices)
-        {
-            output.WriteLine($"{choice.Message.Role}: {choice.Message.Content}");
-        }
+        output.WriteLine(JsonSerializer.Serialize(response, new JsonSerializerOptions() { WriteIndented = true }));
     }
 }
