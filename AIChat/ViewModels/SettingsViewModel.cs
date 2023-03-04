@@ -17,12 +17,12 @@ public partial class SettingsViewModel : ObservableRecipient
 {
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IThemeSelectorService _themeSelectorService;
+    private readonly IApiKeyService _apiKeyService;
     private ElementTheme _elementTheme;
     private string _versionDescription;
 
     [ObservableProperty]
     private string _openAiApiKey;
-    private const string OpenAiApiKeySettingsKey = "OpenAiApiKey";
 
     public ElementTheme ElementTheme
     {
@@ -41,10 +41,11 @@ public partial class SettingsViewModel : ObservableRecipient
         get;
     }
 
-    public SettingsViewModel(ILocalSettingsService localSettingsService, IThemeSelectorService themeSelectorService)
+    public SettingsViewModel(ILocalSettingsService localSettingsService, IThemeSelectorService themeSelectorService, IApiKeyService apiKeyService)
     {
         _localSettingsService = localSettingsService;
         _themeSelectorService = themeSelectorService;
+        _apiKeyService = apiKeyService;
         _elementTheme = _themeSelectorService.Theme;
         _versionDescription = GetVersionDescription();
 
@@ -58,18 +59,14 @@ public partial class SettingsViewModel : ObservableRecipient
                 }
             });
 
-        _openAiApiKey = string.Empty;
-        Task.Run(async () =>
+        _openAiApiKey = _apiKeyService.OpenAiApiKey;
+        PropertyChanged += (sender, e) =>
         {
-            OpenAiApiKey = await _localSettingsService.ReadSettingAsync<string>(OpenAiApiKeySettingsKey) ?? string.Empty;
-            PropertyChanged += async (sender, e) =>
+            if (e.PropertyName == nameof(OpenAiApiKey))
             {
-                if (e.PropertyName == nameof(OpenAiApiKey))
-                {
-                    await _localSettingsService.SaveSettingAsync(OpenAiApiKeySettingsKey, OpenAiApiKey);
-                }
-            };
-        });
+                _apiKeyService.OpenAiApiKey = OpenAiApiKey;
+            }
+        };
     }
 
     private static string GetVersionDescription()
