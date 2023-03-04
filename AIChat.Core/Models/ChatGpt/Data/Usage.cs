@@ -2,23 +2,8 @@
 
 namespace AIChat.Core.Models.ChatGpt.Data;
 
-public class Usage
-{
-    [JsonPropertyName("prompt_tokens")]
-    public int PromptTokens
-    {
-        get; init;
-    }
-
-    [JsonPropertyName("completion_tokens")]
-    public int CompletionTokens
-    {
-        get; init;
-    }
-
-    [JsonPropertyName("total_tokens")]
-    public int TotalTokens
-    {
-        get; init;
-    }
-}
+public record Usage(
+    [property: JsonPropertyName("prompt_tokens")] int PromptTokens,
+    [property: JsonPropertyName("completion_tokens")] int CompletionTokens,
+    [property: JsonPropertyName("total_tokens")] int TotalTokens
+);

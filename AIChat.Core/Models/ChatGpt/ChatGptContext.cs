@@ -35,7 +35,7 @@ public class ChatGptContext
 
     public async Task<Response?> Request(string message)
     {
-        Messages.Add(new Message() { Role = "user", Content = message });
+        Messages.Add(new Message("user", message));
         var requestBody = new RequestBody() { Model = "gpt-3.5-turbo", Messages = Messages };
 
         Client.DefaultRequestHeaders.Clear();
