@@ -1,4 +1,6 @@
-﻿using AIChat.Contracts.Services;
+﻿#nullable disable
+
+using AIChat.Contracts.Services;
 using AIChat.Core.Contracts.Services;
 using AIChat.Core.Helpers;
 using AIChat.Helpers;
@@ -48,7 +50,7 @@ public class LocalSettingsService : ILocalSettingsService
         }
     }
 
-    public async Task<T?> ReadSettingAsync<T>(string key)
+    public async Task<T> ReadSettingAsync<T>(string key)
     {
         if (RuntimeHelper.IsMSIX)
         {
