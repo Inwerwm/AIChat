@@ -1,5 +1,6 @@
 ﻿#nullable disable
 
+using System.Text.Json;
 using AIChat.Contracts.Services;
 using AIChat.Core.Contracts.Services;
 using AIChat.Core.Helpers;
@@ -65,7 +66,7 @@ public class LocalSettingsService : ILocalSettingsService
 
             if (_settings != null && _settings.TryGetValue(key, out var obj))
             {
-                return await Json.ToObjectAsync<T>((string)obj);
+                return await Json.ToObjectAsync<T>(((JsonElement)obj).GetString());
             }
         }
 
