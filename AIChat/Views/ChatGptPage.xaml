@@ -4,9 +4,60 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:chatgpt="using:AIChat.Core.Models.ChatGpt.Data"
     mc:Ignorable="d">
 
     <Grid x:Name="ContentArea">
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <ListView x:Name="ChatLog" ItemsSource="{x:Bind ViewModel.Choices}" SelectionMode="None">
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <ItemsStackPanel ItemsUpdatingScrollMode="KeepLastItemInView" VerticalAlignment="Bottom"/>
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="chatgpt:Choice">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <Border BorderThickness="1" CornerRadius="3" BorderBrush="{ThemeResource TextFillColorDisabled}" Margin="0,0,0,20">
+                            <StackPanel Height="Auto" Margin="10">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{x:Bind Message.Role}"/>
+                                    <TextBlock Text=":"/>
+                                </StackPanel>
+                                <RichTextBlock TextAlignment="Start">
+                                    <Paragraph>
+                                        <Run Text="{x:Bind Message.Content}" />
+                                    </Paragraph>
+                                </RichTextBlock>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="100"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBox x:Uid="Input_Message" Text="{x:Bind ViewModel.InputText, Mode=TwoWay}" AcceptsReturn="True" TextWrapping="Wrap" Grid.Column="0"/>
+            <Button x:Uid="Button_Submit" Command="{x:Bind ViewModel.AddChatCommand}" Content="Submit" Grid.Column="1"/>
+        </Grid>
     </Grid>
 </Page>
