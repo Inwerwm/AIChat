@@ -159,4 +159,13 @@
   <data name="Setting_ApiKey.Text" xml:space="preserve">
     <value>API keys</value>
   </data>
+  <data name="Button_Submit.Content" xml:space="preserve">
+    <value>Tell</value>
+  </data>
+  <data name="Switch_ToggleRole.OffContent" xml:space="preserve">
+    <value>as User</value>
+  </data>
+  <data name="Switch_ToggleRole.OnContent" xml:space="preserve">
+    <value>as System</value>
+  </data>
 </root>

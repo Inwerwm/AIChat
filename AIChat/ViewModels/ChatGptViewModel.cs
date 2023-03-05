@@ -11,8 +11,10 @@ public partial class ChatGptViewModel : ObservableRecipient
 {
     [ObservableProperty]
     private string _inputText;
+    [ObservableProperty]
+    private bool _asSystem;
+
     private readonly IApiKeyService _apiKeyService;
-    private readonly IContextService _contextService;
 
     private ChatGptContext ChatGptContext
     {
@@ -30,7 +32,6 @@ public partial class ChatGptViewModel : ObservableRecipient
         _inputText = string.Empty;
         Messages = new();
         _apiKeyService = apiKeyService;
-        _contextService = contextService;
 
         if (string.IsNullOrEmpty(_apiKeyService.OpenAiApiKey))
         {
@@ -55,9 +56,12 @@ public partial class ChatGptViewModel : ObservableRecipient
     {
         if (string.IsNullOrEmpty(InputText)) { return; }
         var input = InputText;
-        InputText = string.Empty;
+        var asSystem = AsSystem;
 
-        var responses = ChatGptContext.TellAsUser(input);
+        InputText = string.Empty;
+        AsSystem = false;
+
+        var responses = asSystem ? ChatGptContext.TellAsSystem(input) : ChatGptContext.TellAsUser(input);
         await foreach (var message in responses)
         {
             Messages.Add(message);

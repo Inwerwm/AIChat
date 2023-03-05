@@ -16,7 +16,7 @@
         <ListView x:Name="ChatLog" ItemsSource="{x:Bind ViewModel.Messages}" SelectionMode="None">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <ItemsStackPanel ItemsUpdatingScrollMode="KeepLastItemInView" VerticalAlignment="Bottom"/>
+                    <ItemsStackPanel ItemsUpdatingScrollMode="KeepLastItemInView" VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
                 </ItemsPanelTemplate>
             </ListView.ItemsPanel>
 
@@ -39,7 +39,7 @@
                                     <TextBlock Text="{x:Bind Role}"/>
                                     <TextBlock Text=":"/>
                                 </StackPanel>
-                                <RichTextBlock TextWrapping="Wrap" TextAlignment="Start" Width="900">
+                                <RichTextBlock TextWrapping="Wrap" TextAlignment="Start" Width="640">
                                     <Paragraph>
                                         <Run Text="{x:Bind Content}" />
                                     </Paragraph>
@@ -50,14 +50,16 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" ColumnSpacing="10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
                 <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="120"/>
             </Grid.ColumnDefinitions>
 
             <TextBox x:Uid="Input_Message" Text="{x:Bind ViewModel.InputText, Mode=TwoWay}" AcceptsReturn="True" TextWrapping="Wrap" Grid.Column="0"/>
-            <Button x:Uid="Button_Submit" Command="{x:Bind ViewModel.TellCommand}" Content="Submit" Grid.Column="1"/>
+            <Button x:Uid="Button_Submit" Command="{x:Bind ViewModel.TellCommand}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1" />
+            <ToggleSwitch x:Uid="Switch_ToggleRole" IsOn="{x:Bind ViewModel.AsSystem, Mode=TwoWay}" HorizontalAlignment="Left" Grid.Column="2" />
         </Grid>
     </Grid>
 </Page>
