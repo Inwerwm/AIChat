@@ -53,29 +53,31 @@ public class ChatGptContext
         var message = new Message(role.GetString(), content);
         MessageLog.Add(message);
 
+        // まず入力メッセージを返す
         yield return message;
         if(!requireSubmit) { yield break; }
 
+        // リクエストを送信
         var request = new RequestBody() { Model = "gpt-3.5-turbo", Messages = MessageLog };
-
         using var httpResponse = await Request(request);
         if (httpResponse is null || !httpResponse.IsSuccessStatusCode)
         {
-            yield return new("ERROR", httpResponse is null ?
-                """
-                    API Access error.
-                    The cause of the error is unknown.
-                    """ :
-                $"""
-                    API Access error.
-                    Status code is {httpResponse.StatusCode}
-                    """
-            );
+            // 通信に失敗したらチャットログには入れずにエラーメッセージを返す
+            yield return CreateErrorMessage(httpResponse);
             yield break;
         }
         var response = await httpResponse.Content.ReadFromJsonAsync<Response>();
-        if (response is null) { yield break; }
+        if (response is null) {
+            // Jsonからのデシリアライズに失敗したとき
+            yield return new("ERROR", """
+                Response Error.
+                Failed to deserialize response data from Json.
+                """
+            );
+            yield break; 
+        }
 
+        // レスポンスをチャットログに追加するとともに戻り値として返す
         var responseMessages = response.Choices.Select(c => c.Message);
         MessageLog.AddRange(responseMessages);
 
@@ -84,6 +86,17 @@ public class ChatGptContext
             yield return responseMessage;
         }
     }
+
+    private static Message CreateErrorMessage(HttpResponseMessage? httpResponse) => new("ERROR", httpResponse is null ?
+        """
+            API Access error.
+            The cause of the error is unknown.
+            """ :
+        $"""
+            API Access error.
+            Status code is {httpResponse.StatusCode}
+            """
+        );
 
     /// <summary>
     /// 動作設定をするためのメッセージを送る
