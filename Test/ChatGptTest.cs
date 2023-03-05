@@ -18,10 +18,13 @@ public class ChatGptTest
     public async void AccessTest()
     {
         var context = new ChatGptContext(Client, Secret.ApiKey);
-        var response = await context.Request("Chat GPT ‚É‚Â‚¢‚Äà–¾‚µ‚Ä‚­‚¾‚³‚¢B");
+        var responses = context.TellAsUser("Chat GPT ‚É‚Â‚¢‚Äà–¾‚µ‚Ä‚­‚¾‚³‚¢B");
 
-        Assert.NotNull(response);
+        Assert.NotNull(responses);
 
-        output.WriteLine(JsonSerializer.Serialize(response, new JsonSerializerOptions() { WriteIndented = true }));
+        await foreach (var response in responses)
+        {
+            output.WriteLine(response.ToString());
+        }
     }
 }
