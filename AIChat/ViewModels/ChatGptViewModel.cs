@@ -24,9 +24,12 @@ public partial class ChatGptViewModel : ObservableRecipient
     [RelayCommand]
     private void AddChat()
     {
+        if(string.IsNullOrEmpty(InputText)) { return; }
+
         Choices.Add(new(0, new(
             "User",
-            Guid.NewGuid().ToString()
+            InputText
             ), "test"));
+        InputText = string.Empty;
     }
 }
