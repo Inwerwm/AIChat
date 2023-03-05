@@ -16,7 +16,7 @@ public class ChatGptContext
         get;
     } = "https://api.openai.com/v1/chat/completions";
 
-    private string ApiKey
+    public string ApiKey
     {
         get;
     }
@@ -47,29 +47,38 @@ public class ChatGptContext
         return httpResponse.IsSuccessStatusCode ? await httpResponse.Content.ReadFromJsonAsync<Response>() : null;
     }
 
-    private async Task<IEnumerable<Message>> Tell(Role role, string message)
+    private async IAsyncEnumerable<Message> Tell(Role role, string content, bool requireSubmit = true)
     {
         // リクエストではこれまでの全会話を送るのではじめに入力メッセージをログに追加する
-        MessageLog.Add(new Message(role.GetString(), message));
+        var message = new Message(role.GetString(), content);
+        MessageLog.Add(message);
+
+        yield return message;
+
         var request = new RequestBody() { Model = "gpt-3.5-turbo", Messages = MessageLog };
 
         var response = await Request(request);
-        if (response is null) { return Enumerable.Empty<Message>(); }
+        if (response is null) { yield break; }
 
         var responseMessages = response.Choices.Select(c => c.Message);
         MessageLog.AddRange(responseMessages);
-        return responseMessages;
+
+        foreach (var responseMessage in responseMessages)
+        {
+            yield return responseMessage;
+        }
     }
 
     /// <summary>
-    /// モデルの動作設定をするためのメッセージを送る
+    /// 動作設定をするためのメッセージを送る
     /// </summary>
-    public async Task<IEnumerable<Message>> TellAsSystem(string message) => await Tell(Role.System, message);
-    public async Task<IEnumerable<Message>> TellAsUser(string message) => await Tell(Role.User, message);
-    public IEnumerable<Message> TellAsAssistant(string message)
-    {
-        var m = new Message(Role.Assistant.GetString(), message);
-        MessageLog.Add(m);
-        return new[] { m };
-    }
+    public IAsyncEnumerable<Message> TellAsSystem(string message) => Tell(Role.System, message);
+    /// <summary>
+    /// チャットを送る
+    /// </summary>
+    public IAsyncEnumerable<Message> TellAsUser(string message) => Tell(Role.User, message);
+    /// <summary>
+    /// AIの回答を装った会話を追加する
+    /// </summary>
+    public IAsyncEnumerable<Message> TellAsAssistant(string message) => Tell(Role.Assistant, message, false);
 }

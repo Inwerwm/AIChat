@@ -13,7 +13,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <ListView x:Name="ChatLog" ItemsSource="{x:Bind ViewModel.Choices}" SelectionMode="None">
+        <ListView x:Name="ChatLog" ItemsSource="{x:Bind ViewModel.Messages}" SelectionMode="None">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
                     <ItemsStackPanel ItemsUpdatingScrollMode="KeepLastItemInView" VerticalAlignment="Bottom"/>
@@ -27,7 +27,7 @@
             </ListView.ItemContainerStyle>
 
             <ListView.ItemTemplate>
-                <DataTemplate x:DataType="chatgpt:Choice">
+                <DataTemplate x:DataType="chatgpt:Message">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -36,12 +36,12 @@
                         <Border BorderThickness="1" CornerRadius="3" BorderBrush="{ThemeResource TextFillColorDisabled}" Margin="0,0,0,20">
                             <StackPanel Height="Auto" Margin="10">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{x:Bind Message.Role}"/>
+                                    <TextBlock Text="{x:Bind Role}"/>
                                     <TextBlock Text=":"/>
                                 </StackPanel>
-                                <RichTextBlock TextAlignment="Start">
+                                <RichTextBlock TextWrapping="Wrap" TextAlignment="Start" Width="900">
                                     <Paragraph>
-                                        <Run Text="{x:Bind Message.Content}" />
+                                        <Run Text="{x:Bind Content}" />
                                     </Paragraph>
                                 </RichTextBlock>
                             </StackPanel>
@@ -57,7 +57,7 @@
             </Grid.ColumnDefinitions>
 
             <TextBox x:Uid="Input_Message" Text="{x:Bind ViewModel.InputText, Mode=TwoWay}" AcceptsReturn="True" TextWrapping="Wrap" Grid.Column="0"/>
-            <Button x:Uid="Button_Submit" Command="{x:Bind ViewModel.AddChatCommand}" Content="Submit" Grid.Column="1"/>
+            <Button x:Uid="Button_Submit" Command="{x:Bind ViewModel.TellCommand}" Content="Submit" Grid.Column="1"/>
         </Grid>
     </Grid>
 </Page>

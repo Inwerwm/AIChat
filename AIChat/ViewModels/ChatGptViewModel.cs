@@ -1,4 +1,6 @@
 ﻿using System.Collections.ObjectModel;
+using AIChat.Contracts.Services;
+using AIChat.Core.Models.ChatGpt;
 using AIChat.Core.Models.ChatGpt.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -9,27 +11,45 @@ public partial class ChatGptViewModel : ObservableRecipient
 {
     [ObservableProperty]
     private string _inputText;
+    private readonly IApiKeyService _apiKeyService;
+    private readonly IContextService _contextService;
 
-    public ObservableCollection<Choice> Choices
+    private ChatGptContext ChatGptContext
+    {
+        get;
+        set;
+    }
+
+    public ObservableCollection<Message> Messages
     {
         get;
     }
 
-    public ChatGptViewModel()
+    public ChatGptViewModel(IApiKeyService apiKeyService, IContextService contextService)
     {
         _inputText = string.Empty;
-        Choices = new();
+        Messages = new();
+        _apiKeyService = apiKeyService;
+        _contextService = contextService;
+
+        ChatGptContext = contextService.GetChatGptContext(_apiKeyService.OpenAiApiKey);
+        foreach (var message in ChatGptContext.MessageLog)
+        {
+            Messages.Add(message);
+        }
     }
 
     [RelayCommand]
-    private void AddChat()
+    private async void Tell()
     {
-        if(string.IsNullOrEmpty(InputText)) { return; }
-
-        Choices.Add(new(0, new(
-            "User",
-            InputText
-            ), "test"));
+        if (string.IsNullOrEmpty(InputText)) { return; }
+        var input = InputText;
         InputText = string.Empty;
+
+        var responses = ChatGptContext.TellAsUser(input);
+        await foreach (var message in responses)
+        {
+            Messages.Add(message);
+        }
     }
 }
