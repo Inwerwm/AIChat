@@ -32,6 +32,17 @@ public partial class ChatGptViewModel : ObservableRecipient
         _apiKeyService = apiKeyService;
         _contextService = contextService;
 
+        if (string.IsNullOrEmpty(_apiKeyService.OpenAiApiKey))
+        {
+            Messages.Add(new(
+                "APP",
+                """
+                OpenAI API key is not set.
+                Please enter it from the settings page.
+                """
+            ));
+        }
+
         ChatGptContext = contextService.GetChatGptContext(_apiKeyService.OpenAiApiKey);
         foreach (var message in ChatGptContext.MessageLog)
         {
