@@ -33,7 +33,7 @@ public class ChatGptContext
         MessageLog = new();
     }
 
-    private async Task<Response?> Request(RequestBody requestBody)
+    private async Task<HttpResponseMessage?> Request(RequestBody requestBody)
     {
         Client.DefaultRequestHeaders.Clear();
         Client.DefaultRequestHeaders.Add("Authorization", $"Bearer {ApiKey}");
@@ -43,8 +43,8 @@ public class ChatGptContext
         {
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         });
-        using var httpResponse = await Client.PostAsync(ApiUrl, content);
-        return httpResponse.IsSuccessStatusCode ? await httpResponse.Content.ReadFromJsonAsync<Response>() : null;
+
+        return await Client.PostAsync(ApiUrl, content);
     }
 
     private async IAsyncEnumerable<Message> Tell(Role role, string content, bool requireSubmit = true)
@@ -58,7 +58,22 @@ public class ChatGptContext
 
         var request = new RequestBody() { Model = "gpt-3.5-turbo", Messages = MessageLog };
 
-        var response = await Request(request);
+        using var httpResponse = await Request(request);
+        if (httpResponse is null || !httpResponse.IsSuccessStatusCode)
+        {
+            yield return new("ERROR", httpResponse is null ?
+                """
+                    API Access error.
+                    The cause of the error is unknown.
+                    """ :
+                $"""
+                    API Access error.
+                    Status code is {httpResponse.StatusCode}
+                    """
+            );
+            yield break;
+        }
+        var response = await httpResponse.Content.ReadFromJsonAsync<Response>();
         if (response is null) { yield break; }
 
         var responseMessages = response.Choices.Select(c => c.Message);
