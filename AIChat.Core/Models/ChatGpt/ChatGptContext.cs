@@ -21,7 +21,7 @@ public class ChatGptContext
         get;
     }
 
-    public List<Message> Messages
+    public List<Message> MessageLog
     {
         get;
     }
@@ -30,14 +30,11 @@ public class ChatGptContext
     {
         Client = client;
         ApiKey = apiKey;
-        Messages = new();
+        MessageLog = new();
     }
 
-    public async Task<Response?> Request(string message)
+    private async Task<Response?> Request(RequestBody requestBody)
     {
-        Messages.Add(new Message("user", message));
-        var requestBody = new RequestBody() { Model = "gpt-3.5-turbo", Messages = Messages };
-
         Client.DefaultRequestHeaders.Clear();
         Client.DefaultRequestHeaders.Add("Authorization", $"Bearer {ApiKey}");
         Client.DefaultRequestHeaders.Add("X-Slack-No-Retry", "1");
@@ -46,7 +43,33 @@ public class ChatGptContext
         {
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         });
-        using var response = await Client.PostAsync(ApiUrl, content);
-        return response.IsSuccessStatusCode ? await response.Content.ReadFromJsonAsync<Response>() : null;
+        using var httpResponse = await Client.PostAsync(ApiUrl, content);
+        return httpResponse.IsSuccessStatusCode ? await httpResponse.Content.ReadFromJsonAsync<Response>() : null;
+    }
+
+    private async Task<IEnumerable<Message>> Tell(Role role, string message)
+    {
+        // リクエストではこれまでの全会話を送るのではじめに入力メッセージをログに追加する
+        MessageLog.Add(new Message(role.GetString(), message));
+        var request = new RequestBody() { Model = "gpt-3.5-turbo", Messages = MessageLog };
+
+        var response = await Request(request);
+        if (response is null) { return Enumerable.Empty<Message>(); }
+
+        var responseMessages = response.Choices.Select(c => c.Message);
+        MessageLog.AddRange(responseMessages);
+        return responseMessages;
+    }
+
+    /// <summary>
+    /// モデルの動作設定をするためのメッセージを送る
+    /// </summary>
+    public async Task<IEnumerable<Message>> TellAsSystem(string message) => await Tell(Role.System, message);
+    public async Task<IEnumerable<Message>> TellAsUser(string message) => await Tell(Role.User, message);
+    public IEnumerable<Message> TellAsAssistant(string message)
+    {
+        var m = new Message(Role.Assistant.GetString(), message);
+        MessageLog.Add(m);
+        return new[] { m };
     }
 }
