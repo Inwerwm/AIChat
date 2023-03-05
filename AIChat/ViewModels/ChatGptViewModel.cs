@@ -52,7 +52,7 @@ public partial class ChatGptViewModel : ObservableRecipient
     }
 
     [RelayCommand]
-    private async void Tell()
+    private async Task Tell()
     {
         if (string.IsNullOrEmpty(InputText)) { return; }
         var input = InputText;
