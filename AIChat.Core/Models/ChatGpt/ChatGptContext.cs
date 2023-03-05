@@ -54,6 +54,7 @@ public class ChatGptContext
         MessageLog.Add(message);
 
         yield return message;
+        if(!requireSubmit) { yield break; }
 
         var request = new RequestBody() { Model = "gpt-3.5-turbo", Messages = MessageLog };
 
