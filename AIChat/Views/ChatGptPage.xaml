@@ -52,14 +52,16 @@
         </ListView>
         <Grid Grid.Row="1" ColumnSpacing="10">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100"/>
                 <ColumnDefinition/>
                 <ColumnDefinition Width="100"/>
                 <ColumnDefinition Width="120"/>
             </Grid.ColumnDefinitions>
 
-            <TextBox x:Uid="Input_Message" Text="{x:Bind ViewModel.InputText, Mode=TwoWay}" AcceptsReturn="True" TextWrapping="Wrap" Grid.Column="0"/>
-            <Button x:Uid="Button_Submit" Command="{x:Bind ViewModel.TellCommand}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1" />
-            <ToggleSwitch x:Uid="Switch_ToggleRole" IsOn="{x:Bind ViewModel.AsSystem, Mode=TwoWay}" HorizontalAlignment="Left" Grid.Column="2" />
+            <Button x:Uid="Button_Clean" Command="{x:Bind ViewModel.CleanCommand}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" />
+            <TextBox x:Uid="Input_Message" Text="{x:Bind ViewModel.InputText, Mode=TwoWay}" AcceptsReturn="True" TextWrapping="Wrap" Grid.Column="1"/>
+            <Button x:Uid="Button_Submit" Command="{x:Bind ViewModel.TellCommand}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="2" />
+            <ToggleSwitch x:Uid="Switch_ToggleRole" IsOn="{x:Bind ViewModel.AsSystem, Mode=TwoWay}" HorizontalAlignment="Left" Grid.Column="3" />
         </Grid>
     </Grid>
 </Page>

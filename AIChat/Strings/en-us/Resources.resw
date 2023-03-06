@@ -156,4 +156,7 @@
   <data name="Switch_ToggleRole.OnContent" xml:space="preserve">
     <value>as System</value>
   </data>
+  <data name="Button_Clean.Content" xml:space="preserve">
+    <value>Clean</value>
+  </data>
 </root>

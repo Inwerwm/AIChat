@@ -52,6 +52,13 @@ public partial class ChatGptViewModel : ObservableRecipient
     }
 
     [RelayCommand]
+    private void Clean()
+    {
+        ChatGptContext.MessageLog.Clear();
+        Messages.Clear();
+    }
+
+    [RelayCommand]
     private async Task Tell()
     {
         if (string.IsNullOrEmpty(InputText)) { return; }
