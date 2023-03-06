@@ -23,8 +23,9 @@
             </NavigationView.MenuItemTemplate>
 
             <NavigationView.PaneFooter>
-                <StackPanel x:Name="FooterStackPanel" Orientation="Vertical" Visibility="Visible">
-                    <NavigationViewItem Content="+" AutomationProperties.Name="add" Tapped="NavigationViewItem_Tapped" />
+                <StackPanel x:Name="FooterStackPanel" Orientation="Horizontal" Visibility="Visible">
+                    <NavigationViewItem Content="+" AutomationProperties.Name="add" Tapped="AddContext" />
+                    <NavigationViewItem Content="-" AutomationProperties.Name="remove" Tapped="RemoveContext" />
                 </StackPanel>
             </NavigationView.PaneFooter>
 

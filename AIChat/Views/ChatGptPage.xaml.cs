@@ -24,8 +24,13 @@ public sealed partial class ChatGptPage : Page
         ViewModel.ChangeContext((ChatContextItem)args.SelectedItem);
     }
 
-    private void NavigationViewItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+    private void AddContext(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
     {
         ViewModel.AddContext();
+    }
+
+    private void RemoveContext(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+    {
+        ViewModel.RemoveContext();
     }
 }

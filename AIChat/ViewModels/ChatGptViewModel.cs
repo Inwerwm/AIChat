@@ -15,7 +15,7 @@ public partial class ChatGptViewModel : ObservableRecipient
     [ObservableProperty]
     private bool _asSystem;
     private ChatGptContext _chatGptContext;
-    private IContextService _contextService;
+    private readonly IContextService _contextService;
 
     public ObservableCollection<ChatContextItem> ChatGptContexts
     {
@@ -62,8 +62,9 @@ public partial class ChatGptViewModel : ObservableRecipient
         }
     }
 
-    public void ChangeContext(ChatContextItem contextItem)
+    public void ChangeContext(ChatContextItem? contextItem)
     {
+        if(contextItem is null) { return; }
         ChatGptContext = contextItem.Context;
     }
 
@@ -71,7 +72,15 @@ public partial class ChatGptViewModel : ObservableRecipient
     {
         var newContext = _contextService.CreateChatGptContext();
         _contextService.ChatGptContexts.Add(newContext);
-        ChatGptContexts.Add(new($"context {_contextService.ChatGptContexts.Count}", newContext));
+        ChatGptContexts.Add(new($"context", newContext));
+    }
+
+    public void RemoveContext()
+    {
+        var currentItem = ChatGptContexts.FirstOrDefault(contextItem => contextItem.Context == ChatGptContext);
+        if(currentItem is null) { return; }
+        ChatGptContexts.Remove(currentItem);
+        _contextService.ChatGptContexts.Remove(ChatGptContext);
     }
 
     [RelayCommand]
