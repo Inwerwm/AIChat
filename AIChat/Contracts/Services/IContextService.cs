@@ -1,17 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AIChat.Core.Models.ChatGpt;
+﻿using AIChat.Core.Models.ChatGpt;
 
 namespace AIChat.Contracts.Services;
 public interface IContextService
 {
     HttpClient HttpClient
     {
-    get;
+        get;
     }
 
-    ChatGptContext GetChatGptContext(string apiKey);
+    List<ChatGptContext> ChatGptContexts
+    {
+        get;
+    }
+
+    bool IsOpenAIApiKeyNotSet
+    {
+        get;
+    }
+
+    ChatGptContext CreateChatGptContext();
 }

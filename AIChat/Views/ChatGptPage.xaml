@@ -4,16 +4,33 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:chatgpt="using:AIChat.Core.Models.ChatGpt.Data"
+    xmlns:model="using:AIChat.Models"
+    xmlns:chatgptData="using:AIChat.Core.Models.ChatGpt.Data"
     mc:Ignorable="d">
 
     <Grid x:Name="ContentArea" Margin="0,0,0,20">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <ListView x:Name="ChatLog" ItemsSource="{x:Bind ViewModel.Messages}" SelectionMode="None">
+        <NavigationView x:Name="ContextNavigation" SelectionChanged="ContextNavigation_SelectionChanged" MenuItemsSource="{x:Bind ViewModel.ChatGptContexts}" PaneDisplayMode="Top" IsSettingsVisible="False" IsBackButtonVisible="Collapsed" Grid.Row="0">
+            <NavigationView.MenuItemTemplate>
+                <DataTemplate x:DataType="model:ChatContextItem">
+                    <NavigationViewItem Content="{x:Bind Name, Mode=OneWay}"/>
+                </DataTemplate>
+            </NavigationView.MenuItemTemplate>
+
+            <NavigationView.PaneFooter>
+                <StackPanel x:Name="FooterStackPanel" Orientation="Vertical" Visibility="Visible">
+                    <NavigationViewItem Content="+" AutomationProperties.Name="add" Tapped="NavigationViewItem_Tapped" />
+                </StackPanel>
+            </NavigationView.PaneFooter>
+
+        </NavigationView>
+
+        <ListView x:Name="ChatLog" ItemsSource="{x:Bind ViewModel.Messages}" SelectionMode="None" Grid.Row="1">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
                     <ItemsStackPanel ItemsUpdatingScrollMode="KeepLastItemInView" VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
@@ -27,7 +44,7 @@
             </ListView.ItemContainerStyle>
 
             <ListView.ItemTemplate>
-                <DataTemplate x:DataType="chatgpt:Message">
+                <DataTemplate x:DataType="chatgptData:Message">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -50,7 +67,8 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        <Grid Grid.Row="1" ColumnSpacing="10">
+        
+        <Grid Grid.Row="2" ColumnSpacing="10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="100"/>
                 <ColumnDefinition/>

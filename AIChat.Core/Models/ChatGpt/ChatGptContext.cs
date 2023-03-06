@@ -11,7 +11,7 @@ public class ChatGptContext
         get;
     }
 
-    private string ApiUrl
+    private static string ApiUrl
     {
         get;
     } = "https://api.openai.com/v1/chat/completions";
@@ -32,6 +32,13 @@ public class ChatGptContext
         ApiKey = apiKey;
         MessageLog = new();
     }
+
+    public ChatGptContext(HttpClient client, string apiKey, List<Message> messageLog) : this(client, apiKey)
+    {
+        MessageLog = messageLog;
+    }
+
+    public ChatGptContext(string apiKey, ChatGptContext other) : this(other.Client, apiKey, other.MessageLog) { }
 
     private async Task<HttpResponseMessage?> Request(RequestBody requestBody)
     {
@@ -55,7 +62,7 @@ public class ChatGptContext
 
         // まず入力メッセージを返す
         yield return message;
-        if(!requireSubmit) { yield break; }
+        if (!requireSubmit) { yield break; }
 
         // リクエストを送信
         var request = new RequestBody() { Model = "gpt-3.5-turbo", Messages = MessageLog };
@@ -67,14 +74,15 @@ public class ChatGptContext
             yield break;
         }
         var response = await httpResponse.Content.ReadFromJsonAsync<Response>();
-        if (response is null) {
+        if (response is null)
+        {
             // Jsonからのデシリアライズに失敗したとき
             yield return new("ERROR", """
                 Response Error.
                 Failed to deserialize response data from Json.
                 """
             );
-            yield break; 
+            yield break;
         }
 
         // レスポンスをチャットログに追加するとともに戻り値として返す

@@ -2,6 +2,7 @@
 using AIChat.Contracts.Services;
 using AIChat.Core.Models.ChatGpt;
 using AIChat.Core.Models.ChatGpt.Data;
+using AIChat.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -13,13 +14,26 @@ public partial class ChatGptViewModel : ObservableRecipient
     private string _inputText;
     [ObservableProperty]
     private bool _asSystem;
+    private ChatGptContext _chatGptContext;
+    private IContextService _contextService;
 
-    private readonly IApiKeyService _apiKeyService;
+    public ObservableCollection<ChatContextItem> ChatGptContexts
+    {
+        get;
+    }
 
     private ChatGptContext ChatGptContext
     {
-        get;
-        set;
+        get => _chatGptContext;
+        set
+        {
+            _chatGptContext = value;
+            Messages.Clear();
+            foreach (var message in _chatGptContext.MessageLog)
+            {
+                Messages.Add(message);
+            }
+        }
     }
 
     public ObservableCollection<Message> Messages
@@ -27,13 +41,16 @@ public partial class ChatGptViewModel : ObservableRecipient
         get;
     }
 
-    public ChatGptViewModel(IApiKeyService apiKeyService, IContextService contextService)
+    public ChatGptViewModel(IContextService contextService)
     {
         _inputText = string.Empty;
         Messages = new();
-        _apiKeyService = apiKeyService;
 
-        if (string.IsNullOrEmpty(_apiKeyService.OpenAiApiKey))
+        _contextService = contextService;
+        ChatGptContexts = new(_contextService.ChatGptContexts.Select(context => new ChatContextItem("context", context)));
+        _chatGptContext = ChatGptContexts.First().Context;
+
+        if (_contextService.IsOpenAIApiKeyNotSet)
         {
             Messages.Add(new(
                 "APP",
@@ -43,12 +60,18 @@ public partial class ChatGptViewModel : ObservableRecipient
                 """
             ));
         }
+    }
 
-        ChatGptContext = contextService.GetChatGptContext(_apiKeyService.OpenAiApiKey);
-        foreach (var message in ChatGptContext.MessageLog)
-        {
-            Messages.Add(message);
-        }
+    public void ChangeContext(ChatContextItem contextItem)
+    {
+        ChatGptContext = contextItem.Context;
+    }
+
+    public void AddContext()
+    {
+        var newContext = _contextService.CreateChatGptContext();
+        _contextService.ChatGptContexts.Add(newContext);
+        ChatGptContexts.Add(new($"context {_contextService.ChatGptContexts.Count}", newContext));
     }
 
     [RelayCommand]
