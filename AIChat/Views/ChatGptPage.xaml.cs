@@ -19,18 +19,9 @@ public sealed partial class ChatGptPage : Page
         InitializeComponent();
     }
 
-    private void ContextNavigation_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+    protected override void OnNavigatedTo(NavigationEventArgs e)
     {
-        ViewModel.ChangeContext((ChatContextItem)args.SelectedItem);
-    }
-
-    private void AddContext(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
-    {
-        ViewModel.AddContext();
-    }
-
-    private void RemoveContext(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
-    {
-        ViewModel.RemoveContext();
+        base.OnNavigatedTo(e);
+        ViewModel.InitializeContext();
     }
 }

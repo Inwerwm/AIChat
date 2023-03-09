@@ -2,7 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AIChat.Models;
-public partial class ChatContextItem : ObservableRecipient
+public partial class ChatContext : ObservableRecipient
 {
     [ObservableProperty]
     private string _name;
@@ -12,7 +12,7 @@ public partial class ChatContextItem : ObservableRecipient
         get;
     }
 
-    public ChatContextItem(string name, ChatGptContext context)
+    public ChatContext(string name, ChatGptContext context)
     {
         _name = name;
         Context = context;

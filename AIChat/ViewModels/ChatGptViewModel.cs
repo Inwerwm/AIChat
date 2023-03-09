@@ -14,26 +14,16 @@ public partial class ChatGptViewModel : ObservableRecipient
     private string _inputText;
     [ObservableProperty]
     private bool _asSystem;
-    private ChatGptContext _chatGptContext;
+    [ObservableProperty]
+    private ChatContext _currentContext;
     private readonly IContextService _contextService;
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(RemoveContextCommand))]
+    private bool _canRemoveContext;
 
-    public ObservableCollection<ChatContextItem> ChatGptContexts
+    public ObservableCollection<ChatContext> ChatGptContexts
     {
         get;
-    }
-
-    private ChatGptContext ChatGptContext
-    {
-        get => _chatGptContext;
-        set
-        {
-            _chatGptContext = value;
-            Messages.Clear();
-            foreach (var message in _chatGptContext.MessageLog)
-            {
-                Messages.Add(message);
-            }
-        }
     }
 
     public ObservableCollection<Message> Messages
@@ -47,8 +37,26 @@ public partial class ChatGptViewModel : ObservableRecipient
         Messages = new();
 
         _contextService = contextService;
-        ChatGptContexts = new(_contextService.ChatGptContexts.Select(context => new ChatContextItem("context", context)));
-        _chatGptContext = ChatGptContexts.First().Context;
+
+        // チャットコンテキストの設定
+        ChatGptContexts = new(_contextService.ChatGptContexts);
+        ChatGptContexts.CollectionChanged += (sender, e) =>
+        {
+            switch (e.Action)
+            {
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                    _contextService.ChatGptContexts.AddRange(e.NewItems?.Cast<ChatContext>() ?? Enumerable.Empty<ChatContext>());
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
+                    _contextService.ChatGptContexts.RemoveAll(item => e.OldItems?.Contains(item) ?? false);
+                    break;
+            }
+
+            CanRemoveContext = ChatGptContexts.Count > 1;
+        };
+        // コンストラクタの nullable エラー避け
+        // ページ描画時に InitializeContextが呼ばれるので実質無意味
+        _currentContext = _contextService.LastChatGptContext;
 
         if (_contextService.IsOpenAIApiKeyNotSet)
         {
@@ -60,33 +68,50 @@ public partial class ChatGptViewModel : ObservableRecipient
                 """
             ));
         }
+
+        PropertyChanged += (sender, e) =>
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(CurrentContext):
+                    Messages.Clear();
+                    foreach (var message in CurrentContext.Context.MessageLog)
+                    {
+                        Messages.Add(message);
+                    }
+                    _contextService.LastChatGptContext = CurrentContext;
+                    break;
+            }
+        };
     }
 
-    public void ChangeContext(ChatContextItem? contextItem)
+    public void InitializeContext()
     {
-        if(contextItem is null) { return; }
-        ChatGptContext = contextItem.Context;
+        CurrentContext = _contextService.LastChatGptContext;
     }
 
-    public void AddContext()
+    [RelayCommand]
+    private void AddContext()
     {
-        var newContext = _contextService.CreateChatGptContext();
-        _contextService.ChatGptContexts.Add(newContext);
-        ChatGptContexts.Add(new($"context", newContext));
+        var newChat = _contextService.CreateChatContext("new chat");
+        ChatGptContexts.Add(newChat);
+        CurrentContext = newChat;
     }
 
-    public void RemoveContext()
+    [RelayCommand(CanExecute = nameof(CanRemoveContext))]
+    private void RemoveContext()
     {
-        var currentItem = ChatGptContexts.FirstOrDefault(contextItem => contextItem.Context == ChatGptContext);
-        if(currentItem is null) { return; }
-        ChatGptContexts.Remove(currentItem);
-        _contextService.ChatGptContexts.Remove(ChatGptContext);
+        var targetContext = CurrentContext;
+        var nextSelection = ChatGptContexts.ElementAtOrDefault(ChatGptContexts.IndexOf(targetContext) + 1) ?? ChatGptContexts[^2];
+
+        CurrentContext = nextSelection;
+        ChatGptContexts.Remove(targetContext);
     }
 
     [RelayCommand]
     private void Clean()
     {
-        ChatGptContext.MessageLog.Clear();
+        CurrentContext.Context.MessageLog.Clear();
         Messages.Clear();
     }
 
@@ -100,7 +125,7 @@ public partial class ChatGptViewModel : ObservableRecipient
         InputText = string.Empty;
         AsSystem = false;
 
-        var responses = asSystem ? ChatGptContext.TellAsSystem(input) : ChatGptContext.TellAsUser(input);
+        var responses = asSystem ? CurrentContext.Context.TellAsSystem(input) : CurrentContext.Context.TellAsUser(input);
         await foreach (var message in responses)
         {
             Messages.Add(message);
