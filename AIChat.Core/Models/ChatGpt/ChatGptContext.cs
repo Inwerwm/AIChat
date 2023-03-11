@@ -27,7 +27,7 @@ public class ChatGptContext
     }
 
     private readonly int _tokenLimit = 4096;
-    private readonly float _tokenBufferRate = 0.1f;
+    private readonly int _tokenBuffer = 512;
 
     public int TotalTokens
     {
@@ -63,9 +63,6 @@ public class ChatGptContext
         return await Client.PostAsync(ApiUrl, content);
     }
 
-    private IEnumerable<ChatGptMessage> TakeLogs() =>
-        MessageLog.TakeByLimitDesc((int)Math.Ceiling(_tokenLimit * _tokenBufferRate), m => m.Tokens);
-
     private async IAsyncEnumerable<ChatGptMessage> Tell(Role role, string content, bool requireSubmit = true)
     {
         // リクエストではこれまでの全会話を送るのではじめに入力メッセージをログに追加する
@@ -78,7 +75,7 @@ public class ChatGptContext
 
         // 帰ってくるプロンプトのコスト数は一緒に送ったログの値も含むので
         // プロンプト単体のコスト算出のためログ全体のトークン数を持っておく
-        var logsToSend = TakeLogs().ToList();
+        var logsToSend = MessageLog.TakeByLimitDesc(_tokenLimit - _tokenBuffer, m => m.Tokens).ToList();
         var contextTokens = logsToSend.Sum(l => l.Tokens);
 
         // リクエストを送信
