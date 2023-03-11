@@ -2,7 +2,7 @@
 
 namespace AIChat.Core.Models.ChatGpt.Data;
 
-public record Response(
+internal record Response(
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("object")] string Object,
     [property: JsonPropertyName("created")] int Created,

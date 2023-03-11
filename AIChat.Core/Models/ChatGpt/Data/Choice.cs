@@ -2,7 +2,7 @@
 
 namespace AIChat.Core.Models.ChatGpt.Data;
 
-public record Choice(
+internal record Choice(
     [property: JsonPropertyName("index")] int Index,
     [property: JsonPropertyName("message")] Message Message,
     [property: JsonPropertyName("finish_reason")] string FinishReason

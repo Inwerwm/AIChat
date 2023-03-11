@@ -1,7 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using AIChat.Contracts.Services;
 using AIChat.Core.Models.ChatGpt;
-using AIChat.Core.Models.ChatGpt.Data;
 using AIChat.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -26,7 +25,7 @@ public partial class ChatGptViewModel : ObservableRecipient
         get;
     }
 
-    public ObservableCollection<Message> Messages
+    public ObservableCollection<ChatMessage> Messages
     {
         get;
     }
@@ -60,13 +59,13 @@ public partial class ChatGptViewModel : ObservableRecipient
 
         if (_contextService.IsOpenAIApiKeyNotSet)
         {
-            Messages.Add(new(
+            Messages.Add(new(Guid.NewGuid(),
                 "APP",
                 """
                 OpenAI API key is not set.
                 Please enter it from the settings page.
                 """
-            ));
+            , 0));
         }
 
         PropertyChanged += (sender, e) =>
@@ -75,7 +74,7 @@ public partial class ChatGptViewModel : ObservableRecipient
             {
                 case nameof(CurrentContext):
                     Messages.Clear();
-                    foreach (var message in CurrentContext.Context.MessageLog)
+                    foreach (var message in CurrentContext.Context.MessageLog.Select(m => new ChatMessage(m)))
                     {
                         Messages.Add(message);
                     }
@@ -126,9 +125,16 @@ public partial class ChatGptViewModel : ObservableRecipient
         AsSystem = false;
 
         var responses = asSystem ? CurrentContext.Context.TellAsSystem(input) : CurrentContext.Context.TellAsUser(input);
+        ChatMessage? first = null;
         await foreach (var message in responses)
         {
-            Messages.Add(message);
+            var m = new ChatMessage(message);
+            Messages.Add(m);
+            first ??= m;
         }
+
+        // 帰ってくる最初のメッセージはプロンプト
+        // レスポンスが帰ってきた後にトークンが入っているので更新する
+        first?.Reflesh();
     }
 }

@@ -21,9 +21,18 @@ public class ChatGptContext
         get;
     }
 
-    public List<Message> MessageLog
+    public List<ChatGptMessage> MessageLog
     {
         get;
+    }
+
+    private readonly int _tokenLimit = 4096;
+    private readonly float _tokenBufferRate = 0.1f;
+
+    public int TotalTokens
+    {
+        get;
+        private set;
     }
 
     public ChatGptContext(HttpClient client, string apiKey)
@@ -33,7 +42,7 @@ public class ChatGptContext
         MessageLog = new();
     }
 
-    public ChatGptContext(HttpClient client, string apiKey, List<Message> messageLog) : this(client, apiKey)
+    public ChatGptContext(HttpClient client, string apiKey, List<ChatGptMessage> messageLog) : this(client, apiKey)
     {
         MessageLog = messageLog;
     }
@@ -54,18 +63,26 @@ public class ChatGptContext
         return await Client.PostAsync(ApiUrl, content);
     }
 
-    private async IAsyncEnumerable<Message> Tell(Role role, string content, bool requireSubmit = true)
+    private IEnumerable<ChatGptMessage> TakeLogs() =>
+        MessageLog.TakeByLimitDesc((int)Math.Ceiling(_tokenLimit * _tokenBufferRate), m => m.Tokens);
+
+    private async IAsyncEnumerable<ChatGptMessage> Tell(Role role, string content, bool requireSubmit = true)
     {
         // リクエストではこれまでの全会話を送るのではじめに入力メッセージをログに追加する
-        var message = new Message(role.GetString(), content);
-        MessageLog.Add(message);
+        var promptMessage = new ChatGptMessage(Guid.NewGuid(), role.GetString(), content, 0);
+        MessageLog.Add(promptMessage);
 
         // まず入力メッセージを返す
-        yield return message;
+        yield return promptMessage;
         if (!requireSubmit) { yield break; }
 
+        // 帰ってくるプロンプトのコスト数は一緒に送ったログの値も含むので
+        // プロンプト単体のコスト算出のためログ全体のトークン数を持っておく
+        var logsToSend = TakeLogs().ToList();
+        var contextTokens = logsToSend.Sum(l => l.Tokens);
+
         // リクエストを送信
-        var request = new RequestBody() { Model = "gpt-3.5-turbo", Messages = MessageLog };
+        var request = new RequestBody() { Model = "gpt-3.5-turbo", Messages = logsToSend.Select(m => new Message(m.Role, m.Content)).ToList() };
         using var httpResponse = await Request(request);
         if (httpResponse is null || !httpResponse.IsSuccessStatusCode)
         {
@@ -77,16 +94,19 @@ public class ChatGptContext
         if (response is null)
         {
             // Jsonからのデシリアライズに失敗したとき
-            yield return new("ERROR", """
+            yield return new(Guid.NewGuid(), "ERROR", """
                 Response Error.
                 Failed to deserialize response data from Json.
                 """
-            );
+            , 0);
             yield break;
         }
 
+        // レスポンスからプロンプトのトークン数を得る
+        promptMessage.Tokens = response.Usage.PromptTokens - contextTokens;
+        TotalTokens = response.Usage.TotalTokens;
         // レスポンスをチャットログに追加するとともに戻り値として返す
-        var responseMessages = response.Choices.Select(c => c.Message);
+        var responseMessages = response.Choices.Select(c => new ChatGptMessage(Guid.NewGuid(), c.Message.Role, c.Message.Content, (int)Math.Floor(response.Usage.CompletionTokens / (double)response.Choices.Length)));
         MessageLog.AddRange(responseMessages);
 
         foreach (var responseMessage in responseMessages)
@@ -95,7 +115,7 @@ public class ChatGptContext
         }
     }
 
-    private static Message CreateErrorMessage(HttpResponseMessage? httpResponse) => new("ERROR", httpResponse is null ?
+    private static ChatGptMessage CreateErrorMessage(HttpResponseMessage? httpResponse) => new(Guid.NewGuid(), "ERROR", httpResponse is null ?
         """
             API Access error.
             The cause of the error is unknown.
@@ -104,18 +124,18 @@ public class ChatGptContext
             API Access error.
             Status code is {httpResponse.StatusCode}
             """
-        );
+        , 0);
 
     /// <summary>
     /// 動作設定をするためのメッセージを送る
     /// </summary>
-    public IAsyncEnumerable<Message> TellAsSystem(string message) => Tell(Role.System, message);
+    public IAsyncEnumerable<ChatGptMessage> TellAsSystem(string message) => Tell(Role.System, message);
     /// <summary>
     /// チャットを送る
     /// </summary>
-    public IAsyncEnumerable<Message> TellAsUser(string message) => Tell(Role.User, message);
+    public IAsyncEnumerable<ChatGptMessage> TellAsUser(string message) => Tell(Role.User, message);
     /// <summary>
     /// AIの回答を装った会話を追加する
     /// </summary>
-    public IAsyncEnumerable<Message> TellAsAssistant(string message) => Tell(Role.Assistant, message, false);
+    public IAsyncEnumerable<ChatGptMessage> TellAsAssistant(string message) => Tell(Role.Assistant, message, false);
 }

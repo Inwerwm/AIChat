@@ -2,7 +2,7 @@
 
 namespace AIChat.Core.Models.ChatGpt.Data;
 
-public class RequestBody
+internal class RequestBody
 {
     /// <summary>
     /// 使用するモデルのID。

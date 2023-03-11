@@ -2,7 +2,7 @@
 
 namespace AIChat.Core.Models.ChatGpt.Data;
 
-public record Message(
+internal record Message(
     [property: JsonPropertyName("role")] string Role,
     [property: JsonPropertyName("content")] string Content
 );
