@@ -12,13 +12,14 @@ internal static class EnumerableExtensions
         var count = 0;
         foreach (var item in values)
         {
+            count += getCost(item);
+
             if(limit <= count)
             {
                 yield break;
             }
 
             yield return item;
-            count += getCost(item);
         }
     }
 
