@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AIChat.Core.Models.ChatGpt.Data;
+﻿namespace AIChat.Core.Models.ChatGpt.Data;
 internal enum Role
 {
     System,

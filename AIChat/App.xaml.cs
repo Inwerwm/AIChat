@@ -2,7 +2,6 @@
 using AIChat.Contracts.Services;
 using AIChat.Core.Contracts.Services;
 using AIChat.Core.Services;
-using AIChat.Helpers;
 using AIChat.Models;
 using AIChat.Services;
 using AIChat.ViewModels;

@@ -1,5 +1,4 @@
 ﻿using AIChat.Contracts.Services;
-using AIChat.Helpers;
 
 using Microsoft.UI.Xaml;
 

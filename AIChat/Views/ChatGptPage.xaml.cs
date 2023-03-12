@@ -1,8 +1,6 @@
-﻿using AIChat.Models;
-using AIChat.ViewModels;
+﻿using AIChat.ViewModels;
 
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Navigation;
 
 namespace AIChat.Views;
 

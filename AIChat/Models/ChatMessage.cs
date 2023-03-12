@@ -1,6 +1,5 @@
 ﻿using AIChat.Core.Models.ChatGpt;
 using CommunityToolkit.Mvvm.ComponentModel;
-using WinUIEx.Messaging;
 
 namespace AIChat.Models;
 public partial class ChatMessage : ObservableRecipient, IEquatable<ChatMessage>
