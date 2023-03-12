@@ -11,6 +11,12 @@ public class ChatGptContext
         get;
     }
 
+    public string Name
+    {
+        get;
+        set;
+    }
+
     private HttpClient Client
     {
         get;
@@ -40,20 +46,19 @@ public class ChatGptContext
         private set;
     }
 
-    public ChatGptContext(HttpClient client, string apiKey, List<ChatGptMessage> messageLog, Guid id, int totalTokens)
+    public ChatGptContext(string apiKey, HttpClient client, string name, List<ChatGptMessage> messageLog, int totalTokens, Guid id)
     {
         Id = id;
         Client = client;
         ApiKey = apiKey;
         MessageLog = messageLog;
         TotalTokens = totalTokens;
+        Name = name;
     }
 
-    public ChatGptContext(HttpClient client, string apiKey, List<ChatGptMessage> messageLog) : this(client, apiKey, messageLog, Guid.NewGuid(), 0) { }
+    public ChatGptContext(string apiKey, HttpClient client, string name) : this(apiKey, client, name, new(), 0, Guid.NewGuid()) { }
 
-    public ChatGptContext(HttpClient client, string apiKey) : this(client, apiKey, new()) { }
-
-    public ChatGptContext(string apiKey, ChatGptContext other) : this(other.Client, apiKey, other.MessageLog, other.Id, other.TotalTokens) { }
+    public ChatGptContext(string apiKey, ChatGptContext other) : this(apiKey, other.Client, other.Name, other.MessageLog, other.TotalTokens, other.Id) { }
 
     private async Task<HttpResponseMessage?> Request(RequestBody requestBody)
     {

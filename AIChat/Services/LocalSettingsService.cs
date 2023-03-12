@@ -4,13 +4,9 @@ using System.Text.Json;
 using AIChat.Contracts.Services;
 using AIChat.Core.Contracts.Services;
 using AIChat.Core.Helpers;
-using AIChat.Helpers;
 using AIChat.Models;
 
 using Microsoft.Extensions.Options;
-
-using Windows.ApplicationModel;
-using Windows.Storage;
 
 namespace AIChat.Services;
 
@@ -53,21 +49,11 @@ public class LocalSettingsService : ILocalSettingsService
 
     public async Task<T> ReadSettingAsync<T>(string key)
     {
-        if (RuntimeHelper.IsMSIX)
-        {
-            if (ApplicationData.Current.LocalSettings.Values.TryGetValue(key, out var obj))
-            {
-                return await Json.ToObjectAsync<T>((string)obj);
-            }
-        }
-        else
-        {
-            await InitializeAsync();
+        await InitializeAsync();
 
-            if (_settings != null && _settings.TryGetValue(key, out var obj))
-            {
-                return await Json.ToObjectAsync<T>(((JsonElement)obj).GetString());
-            }
+        if (_settings != null && _settings.TryGetValue(key, out var obj))
+        {
+            return await Json.ToObjectAsync<T>(((JsonElement)obj).GetString());
         }
 
         return default;
@@ -75,17 +61,15 @@ public class LocalSettingsService : ILocalSettingsService
 
     public async Task SaveSettingAsync<T>(string key, T value)
     {
-        if (RuntimeHelper.IsMSIX)
-        {
-            ApplicationData.Current.LocalSettings.Values[key] = await Json.StringifyAsync(value);
-        }
-        else
-        {
-            await InitializeAsync();
+        await InitializeAsync();
 
-            _settings[key] = await Json.StringifyAsync(value);
+        _settings[key] = await Json.StringifyAsync(value);
 
-            await Task.Run(() => _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings));
-        }
+        await Task.Run(() => _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings));
+    }
+
+    public void RemoveSetting()
+    {
+        _fileService.Delete(_applicationDataFolder, _localsettingsFile);
     }
 }

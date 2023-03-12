@@ -18,10 +18,4 @@ public sealed partial class ChatGptPage : Page
         ViewModel = App.GetService<ChatGptViewModel>();
         InitializeComponent();
     }
-
-    protected override void OnNavigatedTo(NavigationEventArgs e)
-    {
-        base.OnNavigatedTo(e);
-        ViewModel.InitializeContext();
-    }
 }

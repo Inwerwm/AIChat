@@ -1,7 +1,6 @@
 ﻿using AIChat.Core.Models.ChatGpt;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.UI.Xaml.Controls;
 
 namespace AIChat.Models;
 public partial class ChatContext : ObservableRecipient
@@ -16,10 +15,19 @@ public partial class ChatContext : ObservableRecipient
         get;
     }
 
-    public ChatContext(string name, ChatGptContext context)
+    public ChatContext(string name, ChatGptContext context, Action<ChatContext, string>? onNameChanged)
     {
         _name = name;
         Context = context;
+
+        PropertyChanged += (sender, e) =>
+        {
+            if (e.PropertyName == nameof(Name))
+            {
+                Context.Name = Name;
+                onNameChanged?.Invoke(this, Name);
+            }
+        };
     }
 
     [RelayCommand]

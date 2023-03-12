@@ -17,7 +17,7 @@ public class ChatGptTest
     [Fact]
     public async void AccessTest()
     {
-        var context = new ChatGptContext(Client, Secret.ApiKey);
+        var context = new ChatGptContext(Secret.ApiKey, Client, "");
         var responses = context.TellAsUser("Chat GPT ‚É‚Â‚¢‚Äà–¾‚µ‚Ä‚­‚¾‚³‚¢B");
 
         Assert.NotNull(responses);

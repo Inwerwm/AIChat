@@ -1,5 +1,4 @@
-﻿using AIChat.Core.Models.ChatGpt;
-using AIChat.Models;
+﻿using AIChat.Models;
 
 namespace AIChat.Contracts.Services;
 public interface IContextService
@@ -9,16 +8,10 @@ public interface IContextService
         get;
     }
 
-    List<ChatContext> ChatGptContexts
-    {
-        get;
-    }
+    Task<IReadOnlyList<ChatContext>> GetChatGptContextsAsync();
 
-    ChatContext LastChatGptContext
-    {
-        get;
-        set;
-    }
+    Task<ChatContext> GetLastChatGptContextAsync();
+    void SetLastChatGptContext(ChatContext value);
 
     bool IsOpenAIApiKeyNotSet
     {
@@ -26,4 +19,10 @@ public interface IContextService
     }
 
     ChatContext CreateChatContext(string name);
+
+    void AddChatContext(ChatContext chatContext);
+
+    void RemoveChatContext(ChatContext chatContext);
+
+    void SaveChatContext(ChatContext chatContext);
 }

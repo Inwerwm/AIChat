@@ -64,6 +64,7 @@ public partial class App : Application
             services.AddSingleton<INavigationService, NavigationService>();
 
             services.AddSingleton<IApiKeyService, ApiKeyService>();
+            services.AddSingleton<ILogStorageService, LogStorageService>();
             services.AddSingleton<IContextService, ContextService>();
 
             // Core Services
