@@ -6,6 +6,11 @@ using AIChat.Core.Models.ChatGpt.Data;
 namespace AIChat.Core.Models.ChatGpt;
 public class ChatGptContext
 {
+    public Guid Id
+    {
+        get;
+    }
+
     private HttpClient Client
     {
         get;
@@ -35,19 +40,20 @@ public class ChatGptContext
         private set;
     }
 
-    public ChatGptContext(HttpClient client, string apiKey)
+    public ChatGptContext(HttpClient client, string apiKey, List<ChatGptMessage> messageLog, Guid id, int totalTokens)
     {
+        Id = id;
         Client = client;
         ApiKey = apiKey;
-        MessageLog = new();
-    }
-
-    public ChatGptContext(HttpClient client, string apiKey, List<ChatGptMessage> messageLog) : this(client, apiKey)
-    {
         MessageLog = messageLog;
+        TotalTokens = totalTokens;
     }
 
-    public ChatGptContext(string apiKey, ChatGptContext other) : this(other.Client, apiKey, other.MessageLog) { }
+    public ChatGptContext(HttpClient client, string apiKey, List<ChatGptMessage> messageLog) : this(client, apiKey, messageLog, Guid.NewGuid(), 0) { }
+
+    public ChatGptContext(HttpClient client, string apiKey) : this(client, apiKey, new()) { }
+
+    public ChatGptContext(string apiKey, ChatGptContext other) : this(other.Client, apiKey, other.MessageLog, other.Id, other.TotalTokens) { }
 
     private async Task<HttpResponseMessage?> Request(RequestBody requestBody)
     {
